@@ -20,6 +20,7 @@ public class Datenmodell implements Runnable
   private int faktor;
   private int wert;
   private volatile boolean laufend;
+  private volatile boolean stoppen;
   private SubmissionPublisher<Integer> iPublisher;
   private SubmissionPublisher<Boolean> bPublisher;
   private ExecutorService eService;
@@ -29,6 +30,7 @@ public class Datenmodell implements Runnable
     faktor = 10;
     wert = 1;
     laufend = false;
+    stoppen = false;
     
     iPublisher = new SubmissionPublisher<>();
     bPublisher = new SubmissionPublisher<>();
@@ -39,11 +41,12 @@ public class Datenmodell implements Runnable
   {
     laufend = true;
     eService.submit(this);
+    stoppen = false;
   }
   
   public void stop()
   {
-    laufend = false;
+    stoppen = true;    
   }
   
   public void addWertSubscription(Flow.Subscriber<Integer> subscriber)
@@ -63,14 +66,17 @@ public class Datenmodell implements Runnable
     {
       try
       {
-        Thread.sleep(10);
+        Thread.sleep(50);
       }
       catch (Exception e)
       {
         System.err.println(e);
       }
       wert = (int )(Math.random()*6+1);
-      iPublisher.submit(wert);
+      if (!stoppen)
+      {
+        iPublisher.submit(wert);
+      }
       if (wert % faktor == 0)
       {
         faktor *= 10;
