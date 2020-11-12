@@ -29,6 +29,7 @@ public class Datenmodell implements Runnable
     faktor = 10;
     wert = 1;
     laufend = false;
+    
     iPublisher = new SubmissionPublisher<>();
     bPublisher = new SubmissionPublisher<>();
     eService = Executors.newSingleThreadExecutor(); 
