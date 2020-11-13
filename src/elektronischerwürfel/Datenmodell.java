@@ -10,6 +10,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Flow;
 import java.util.concurrent.SubmissionPublisher;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -20,8 +22,8 @@ public class Datenmodell implements Runnable
   private int faktor;
   private int wert;
   private volatile boolean laufend;
+  private volatile boolean stoppen;
   private SubmissionPublisher<Integer> iPublisher;
-  private SubmissionPublisher<Boolean> bPublisher;
   private ExecutorService eService;
   
   public Datenmodell()
@@ -29,21 +31,23 @@ public class Datenmodell implements Runnable
     faktor = 10;
     wert = 1;
     laufend = false;
+    stoppen = false;
     
     iPublisher = new SubmissionPublisher<>();
-    bPublisher = new SubmissionPublisher<>();
     eService = Executors.newSingleThreadExecutor(); 
   }
   
-  public void start()
+  public synchronized void start()
   {
+    stoppen = false;
+    notify();
     laufend = true;
     eService.submit(this);
   }
   
-  public void stop()
+  public void stop() 
   {
-    laufend = false;
+    stoppen = true;
   }
   
   public void addWertSubscription(Flow.Subscriber<Integer> subscriber)
@@ -51,13 +55,8 @@ public class Datenmodell implements Runnable
     iPublisher.subscribe(subscriber);
   }
   
-  public void addZustandSubscription(Flow.Subscriber<Boolean> subscriber)
-  {
-    bPublisher.subscribe(subscriber);
-  }  
-
   @Override
-  public void run()
+  public synchronized void run() 
   {
     while (laufend)
     {
@@ -71,12 +70,18 @@ public class Datenmodell implements Runnable
       }
       wert = (int )(Math.random()*6+1);
       iPublisher.submit(wert);
-      if (wert % faktor == 0)
+      if(stoppen)
       {
-        faktor *= 10;
-        bPublisher.submit(true);
+        try
+        {
+          wait();
+        }
+        catch (InterruptedException ex)
+        {
+          Logger.getLogger(Datenmodell.class.getName()).log(Level.SEVERE, null, ex);
+        }
       }
-      
+           
     }
   }
 }
