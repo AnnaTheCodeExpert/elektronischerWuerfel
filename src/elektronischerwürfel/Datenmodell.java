@@ -22,7 +22,6 @@ public class Datenmodell implements Runnable
   private volatile boolean laufend;
   private volatile boolean stoppen;
   private SubmissionPublisher<Integer> iPublisher;
-  private SubmissionPublisher<Boolean> bPublisher;
   private ExecutorService eService;
   
   public Datenmodell()
@@ -33,7 +32,6 @@ public class Datenmodell implements Runnable
     stoppen = false;
     
     iPublisher = new SubmissionPublisher<>();
-    bPublisher = new SubmissionPublisher<>();
     eService = Executors.newSingleThreadExecutor(); 
   }
   
@@ -54,10 +52,6 @@ public class Datenmodell implements Runnable
     iPublisher.subscribe(subscriber);
   }
   
-  public void addZustandSubscription(Flow.Subscriber<Boolean> subscriber)
-  {
-    bPublisher.subscribe(subscriber);
-  }  
 
   @Override
   public void run()
@@ -77,12 +71,7 @@ public class Datenmodell implements Runnable
       {
         iPublisher.submit(wert);
       }
-      if (wert % faktor == 0)
-      {
-        faktor *= 10;
-        bPublisher.submit(true);
-      }
-      
+            
     }
   }
 }
