@@ -40,7 +40,7 @@ public class Datenmodell implements Runnable
   public synchronized void start()
   {
     stoppen = false;
-    notify();
+    notifyAll();
     laufend = true;
     eService.submit(this);
   }
@@ -58,7 +58,7 @@ public class Datenmodell implements Runnable
   @Override
   public synchronized void run() 
   {
-    while (laufend)
+    while (true)
     {
       try
       {
