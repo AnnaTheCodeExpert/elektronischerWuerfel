@@ -56,7 +56,7 @@ public class Datenmodell implements Runnable
   @Override
   public void run()
   {
-    while (laufend)
+    while (true)
     {
       try
       {
